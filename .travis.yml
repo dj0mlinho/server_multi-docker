@@ -1,0 +1,23 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t mm88code/server_multi-docker -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true mm88code/server_multi-docker npm run test
+
+after_success:
+  - docker build -t mm88code/mm88code/multi-client ./client
+  - docker build -t mm88code/mm88code/multi-nginx ./nginx
+  - docker build -t mm88code/mm88code/multi-server ./server
+  - docker build -t mm88code/mm88code/multi-worker ./worker\
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push mm88code/mm88code/multi-client
+  - docker push mm88code/mm88code/multi-nginx
+  - docker push mm88code/mm88code/multi-server
+  - docker push mm88code/mm88code/multi-worker
